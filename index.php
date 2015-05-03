@@ -3,7 +3,7 @@
  * htdocsMe (versión 0.1)
  *
  * Desarrollado por Anderson Salas (contacto@andersonsalas.com.ve)
- * Mira el repositorio en GitHub:
+ * Mira el repositorio en GitHub: https://github.com/andersonsalas/htdocsMe
  *---------------------------------------------------------------------------------------*
 
     htdocsMe
