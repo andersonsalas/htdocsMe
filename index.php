@@ -1,6 +1,6 @@
 <?php
 /*
- * htdocsMe (versión 0.3)
+ * htdocsMe (versión 0.3.1)
  *
  * Desarrollado por Anderson Salas (contacto@andersonsalas.com.ve)
  * Repositorio en GitHub: https://github.com/andersonsalas/htdocsMe
@@ -25,29 +25,61 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-function rglob($pattern, $flags = 0) {
-    // Funcion para hacer un glob() recursivo. Tomado de:
-    // http://stackoverflow.com/a/17161106
+    function rglob($pattern, $flags = 0)
+    {
+        // Funcion para hacer un glob() recursivo. Tomado de:
+        // http://stackoverflow.com/a/17161106
 
-    $files = glob($pattern, $flags);
-    foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir) {
-        $files = array_merge($files, rglob($dir.'/'.basename($pattern), $flags));
+        $files = glob($pattern, $flags);
+        //foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir) {
+        foreach (glob(dirname($pattern).'/*') as $dir){
+            $files = array_merge($files, rglob($dir.'/'.basename($pattern), $flags));
+        }
+        return $files;
     }
-    return $files;
-}
 
-if(isset($_POST['busqueda'])){
-    $resultado = rglob(trim($_POST['busqueda']));
-    if(!empty($resultado)){
-        echo '<p class="text-muted">'.count($resultado).' concidencia(s) en total</p>';
-        foreach($resultado as $res){
-            echo '<a href="'.$res.'">'.$res.'</a><br>';
+    function human_filesize($bytes, $decimals = 2)
+    {
+        // Funcion para convertir el tamaño de los archivos a un numero más amigable
+        // http://php.net/manual/es/function.filesize.php#106569
+
+        $sz = 'BKMGTP';
+        $factor = floor((strlen($bytes) - 1) / 3);
+        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor];
+    }
+
+    if(isset($_POST['busqueda'],$_POST['url']))
+    {
+        $url = trim(strip_tags($_POST['url']));
+        $busqueda = trim(strip_tags($_POST['busqueda']));
+        $url = $url.DIRECTORY_SEPARATOR;
+        $resultado = rglob($url.$busqueda);
+
+        if(!empty($resultado)){
+            echo '<p class="text-muted">'.count($resultado).' concidencia(s) en total</p>';
+            foreach($resultado as $res){
+                if(substr($res,0,2) == './') $res = substr($res,2);
+                if(substr($res,0,3) == '.\\\\') $res = substr($res,3);
+                ?>
+                    <span class="glyphicon glyphicon-<?= is_file($res) ? 'file' : 'folder-open' ; ?>" aria-hidden="true" style="color: #B2B2B2"></span>&nbsp;&nbsp;<a href="<?= $res;?>" target="_blank"><?= $res;?></a>
+                    <span class="text-muted"><?= is_file($res) ? '&nbsp;('.human_filesize(filesize($res)).' bytes)' : '' ; ?></span>
+                    <br />
+                <?php
+            }
+        } else {
+            echo '<p class="text-center text-muted">Sin resultados</p>';
+        }
+        die();
+    }
+
+    if(isset($_GET['url'])){
+        $url = $i_url = strip_tags($_GET['url']);
+        if(substr($url,0,1) != '.'.DIRECTORY_SEPARATOR){
+            $url = '.'.DIRECTORY_SEPARATOR.$url;
         }
     } else {
-        echo 'No hubo resultados.<br>';
+        $url = $i_url = __dir__;
     }
-    die();
-}
 
 ?><!DOCTYPE html>
 <html lang="es">
@@ -69,11 +101,12 @@ if(isset($_POST['busqueda'])){
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
         <style>
             body{
-                background: #FAFAFA;
                 font-family: "Droid Sans"
             }
             .main-container{
                 padding-top:30px;
+                padding-bottom: 30px;
+                background: #FAFAFA;
             }
             .search-box, .search-box *, .carpeta, .archivo{
                 border-radius: 0px;
@@ -88,10 +121,13 @@ if(isset($_POST['busqueda'])){
 
             .carpeta:hover, .archivo:hover{
                 box-shadow: 0px 0px 15px 0px rgba(0,0,0,0.3);
+                transition: all 0.2s;
             }
             .carpeta:hover .icono-carpeta, .archivo:hover .icono-archivo{
                 background: #5E9EE8;
+                transition: all 0.2s;
             }
+
             .carpeta .glyphicon{
                 font-size:60px;
             }
@@ -111,6 +147,7 @@ if(isset($_POST['busqueda'])){
                 top: 0px;
                 margin-right: 5px;
                 font-size:15px
+                transition: all 0.5s;
             }
             .archivo:hover .icono-archivo{
                 color: white;
@@ -119,8 +156,9 @@ if(isset($_POST['busqueda'])){
                 width: 100%;
                 display: block;
                 padding: 40px;
-                background: #C9C9C9;
+                background: #E2E2E2;
                 color:white;
+                transition: all 0.5s;
             }
             .search-box input{
                 border-top: none;
@@ -134,95 +172,175 @@ if(isset($_POST['busqueda'])){
             .search-res{
                 display: none;
             }
-
+            .footer{
+                padding: 20px 0px;
+            }
+            .footer p{
+                margin: 0px;
+            }
+            .boton-abrir-externo{
+                width: 35px;
+                height: 35px;
+                color: #424242;
+                background: none;
+                position: absolute;
+                border-radius: 50%;
+                right: 25px;
+                top: 10px;
+                opacity:0.2;
+            }
+            .boton-abrir-externo .glyphicon{
+                font-size:14px;
+                padding: 8px 12px;
+            }
+            .boton-abrir-externo:hover{
+                opacity:1;
+                background: #363636;
+                color: white;
+            }
         </style>
     </head>
     <body>
-        <div class="container main-container">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="search-box panel panel-default">
-                        <div class="panel-body">
-                            <input type="text" class="form-control input-lg input-busqueda" placeholder="Buscar archivos o carpetas..." />
+        <div class="container-fluid  main-container">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="search-box panel panel-default">
+                            <div class="panel-body">
+                                <input type="text" class="form-control input-lg input-busqueda" placeholder="Buscar archivos o carpetas..." />
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row search-res" style="display:none">
-                <div class="col-md-12">
-                    <h4>Resultado de la búsqueda "<span class="busqueda"></span>":</h4>
-                    <hr />
-                    <div class="area-res">
+                <div class="row search-res" style="display:none">
+                    <div class="col-md-12">
+                        <h4>Resultado de la búsqueda:</h4>
+                        <hr />
+                        <div class="area-res">
 
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="row folder-view">
-                <div class="col-md-12">
-                    <h4>Carpetas:</h4>
-                    <hr />
-                </div>
-                <?php foreach(scandir(__DIR__) as $carpeta){ ?>
-                    <?php if($carpeta == '.' || $carpeta == '..' || !is_dir($carpeta)) continue; ?>
-                    <div class="col-md-3 col-xs-6">
-                        <a href="/<?= $carpeta;?>" class="carpeta-href">
-                            <div class="panel panel-default carpeta">
-                                <div class="panel-body text-center">
-                                    <div class="icono-carpeta">
-                                        <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
+                <div class="row folder-view">
+                    <div class="col-md-12">
+                        <h4>Carpetas: <span class="pull-right text-muted"><?= $url;?></span></h4>
+                        <hr />
+                    </div>
+                    <?php foreach(scandir($url) as $carpeta){ ?>
+
+                        <?php
+
+                            if(($url == __dir__) == $_SERVER['DOCUMENT_ROOT'])
+                            {
+                                $link = $e_link = DIRECTORY_SEPARATOR.$carpeta;
+                            }
+                            else
+                            {
+                                $link = $i_url.DIRECTORY_SEPARATOR.$carpeta;
+
+                            }
+
+                            if($carpeta == '.' && isset($_GET['url']) && (dirname($link) != DIRECTORY_SEPARATOR)){
+                                ?>
+                                    <div class="col-md-3 col-xs-6">
+                                        <a href="?url=<?= dirname(dirname($link));?>" class="carpeta-href">
+                                            <div class="panel panel-default carpeta">
+                                                <div class="panel-body text-center">
+                                                    <div class="icono-carpeta" style="background: #BFBFBF">
+                                                        <span class="glyphicon glyphicon-triangle-top" aria-hidden="true"></span>
+                                                    </div>
+                                                    <p>(Subir un nivel)</p>
+                                                </div>
+                                            </div>
+                                        </a>
                                     </div>
-                                    <p><?= $carpeta; ?></p>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                <?php } ?>
-            </div>
-            <div class="row files-view">
-                <div class="col-md-12">
-                    <h4>Archivos:</h4>
-                    <hr />
-                </div>
-                <?php foreach(scandir(__DIR__) as $carpeta){ ?>
-                    <?php if($carpeta == '.' || $carpeta == '..' || !is_file($carpeta)) continue; ?>
-                    <div class="col-xs-4">
-                        <a href="/<?= $carpeta;?>" class="carpeta-href">
-                            <div class="panel panel-default archivo">
-                                <div class="panel-body">
+                                <?php
+                            }
 
-                                    <p><span class="glyphicon glyphicon-folder-open icono-archivo" aria-hidden="true"></span> <?= $carpeta; ?></p>
+                            if($carpeta == '.' || $carpeta == '..' || !is_dir($url.DIRECTORY_SEPARATOR.$carpeta))
+                            {
+                                continue;
+                            }
+
+                        ?>
+
+                        <div class="col-md-3 col-xs-6">
+                            <a href="?url=<?= $link ;?>" class="carpeta-href">
+                                <div class="panel panel-default carpeta">
+                                    <div class="panel-body text-center">
+                                        <div class="icono-carpeta">
+                                            <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
+                                        </div>
+                                        <p><?= $carpeta; ?></p>
+                                    </div>
                                 </div>
-                            </div>
-                        </a>
+                            </a>
+                            <a href="http://<?= $_SERVER['HTTP_HOST'].$link;?>" target="_blank" class="boton-abrir-externo"><span class="glyphicon glyphicon-share" aria-hidden="true"></span></a>
+                        </div>
+                    <?php } ?>
+                </div>
+                <div class="row files-view">
+                    <div class="col-md-12">
+                        <h4>Archivos:</h4>
+                        <hr />
                     </div>
-                <?php } ?>
+                    <?php foreach(scandir($url) as $archivo){ ?>
+
+                        <?php
+                            if($archivo == '.' || $archivo == '..' || !is_file($url.DIRECTORY_SEPARATOR.$archivo))
+                            {
+                                continue;
+                            }
+                            if(($url == __dir__) == $_SERVER['DOCUMENT_ROOT'])
+                            {
+                                $link = DIRECTORY_SEPARATOR.$archivo;
+                            }
+                            else
+                            {
+                                $link = $url.DIRECTORY_SEPARATOR.$archivo;
+                            }
+                        ?>
+
+                        <div class="col-xs-6 col-sm-4">
+                            <a href="<?= $link;?>" class="carpeta-href">
+                                <div class="panel panel-default archivo">
+                                    <div class="panel-body">
+
+                                        <p><span class="glyphicon glyphicon-file icono-archivo" aria-hidden="true"></span> <?= $archivo; ?></p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    <?php } ?>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <p class="text-muted">htdocsMe! 0.3.1 - Hecho por <a href="http://github.com/andersonsalas">Anderson Salas</a></p>
+                    </div>
+                </div>
             </div>
         </div>
         <script type="text/javascript">
             $(document).ready(function(){
-
                 var busqueda = '';
-
-                // Tomado de:
-                // http://stackoverflow.com/a/1909508
-                var delay = (function(){
-                    var timer = 0;
-                    return function(callback, ms){
-                        clearTimeout (timer);
-                        timer = setTimeout(callback, ms);
-                    };
-                })();
-
-                $('.input-busqueda').keyup(function(){
-                    $('.area-res').html('<br><br><br><p class="text-center">Buscando...</p>');
-                    delay(function(){
-                        busqueda = $('.input-busqueda').val();
-                        $('.busqueda').text(busqueda);
+                var globalTimeout = null;
+                $('.input-busqueda').keyup(function() {
+                    busqueda = $('.input-busqueda').val();
+                    if (globalTimeout != null) {
+                        clearTimeout(globalTimeout);
+                    }
+                    globalTimeout = setTimeout(function() {
+                        globalTimeout = null;
                         if(busqueda != ''){
+                            $('.area-res').html('<p class="text-center text-muted">Buscando...</p>');
                             $('.search-res').show();
                             $('.search-box').css('margin-bottom','10px');
                             $('.folder-view, .files-view').hide();
-                            $.post('<?= $_SERVER["REQUEST_URI"];?>', {'busqueda':busqueda}, function(data){
+                            $.post('?', {'busqueda':busqueda, 'url':'<?= $url;?>'}, function(data){
                                 $('.area-res').html(data);
                             });
                         } else {
@@ -230,10 +348,9 @@ if(isset($_POST['busqueda'])){
                             $('.search-box').css('margin-bottom','30px');
                             $('.folder-view, .files-view').show();
                         }
-                    },1000);
+                    }, 350);
                 });
-
-            })
+            });
         </script>
     </body>
 </html>
