@@ -61,8 +61,8 @@
                 if(substr($res,0,2) == './') $res = substr($res,2);
                 if(substr($res,0,3) == '.\\\\') $res = substr($res,3);
                 ?>
-                    <span class="glyphicon glyphicon-<?= is_file($res) ? 'file' : 'folder-open' ; ?>" aria-hidden="true" style="color: #B2B2B2"></span>&nbsp;&nbsp;<a href="<?= $res;?>" target="_blank"><?= $res;?></a>
-                    <span class="text-muted"><?= is_file($res) ? '&nbsp;('.human_filesize(filesize($res)).' bytes)' : '' ; ?></span>
+                    <span class="glyphicon glyphicon-<?php echo is_file($res) ? 'file' : 'folder-open' ; ?>" aria-hidden="true" style="color: #B2B2B2"></span>&nbsp;&nbsp;<a href="<?php echo $res;?>" target="_blank"><?php echo $res;?></a>
+                    <span class="text-muted"><?php echo is_file($res) ? '&nbsp;('.human_filesize(filesize($res)).' bytes)' : '' ; ?></span>
                     <br />
                 <?php
             }
@@ -109,18 +109,18 @@
                 background: #FAFAFA;
             }
             .search-box, .search-box *, .carpeta, .archivo{
-                border-radius: 0px;
+                border-radius: 0;
             }
             .search-box{
                 margin-bottom: 50px;
             }
 
             .carpeta > div, .archivo > div{
-                padding: 0px;
+                padding: 0;
             }
 
             .carpeta:hover, .archivo:hover{
-                box-shadow: 0px 0px 15px 0px rgba(0,0,0,0.3);
+                box-shadow: 0 0 15px 0 rgba(0,0,0,0.3);
                 transition: all 0.2s;
             }
             .carpeta:hover .icono-carpeta, .archivo:hover .icono-archivo{
@@ -135,16 +135,16 @@
                 text-decoration: none !important;
             }
             .carpeta p, .archivo p{
-                margin: 0px;
+                margin: 0;
                 color: #363636;
             }
             .carpeta p{
-                padding: 8px 0px;
+                padding: 8px 0;
             }
             .icono-archivo{
                 background: #FAFAFA;
                 padding: 20px;
-                top: 0px;
+                top: 0;
                 margin-right: 5px;
                 font-size:15px
                 transition: all 0.5s;
@@ -165,18 +165,18 @@
                 border-left: none;
                 border-right: none;
                 border-bottom-width: 2px;
-                padding-left: 0px;
-                padding-right: 0px;
+                padding-left: 0;
+                padding-right: 0;
                 box-shadow: none !important;
             }
             .search-res{
                 display: none;
             }
             .footer{
-                padding: 20px 0px;
+                padding: 20px 0;
             }
             .footer p{
-                margin: 0px;
+                margin: 0;
             }
             .boton-abrir-externo{
                 width: 35px;
@@ -223,7 +223,7 @@
                 </div>
                 <div class="row folder-view">
                     <div class="col-md-12">
-                        <h4>Carpetas: <span class="pull-right text-muted"><?= $url;?></span></h4>
+                        <h4>Carpetas: <span class="pull-right text-muted"><?php echo $url;?></span></h4>
                         <hr />
                     </div>
                     <?php foreach(scandir($url) as $carpeta){ ?>
@@ -243,7 +243,7 @@
                             if($carpeta == '.' && isset($_GET['url']) && (dirname($link) != DIRECTORY_SEPARATOR)){
                                 ?>
                                     <div class="col-md-3 col-xs-6">
-                                        <a href="?url=<?= dirname(dirname($link));?>" class="carpeta-href">
+                                        <a href="?url=<?php echo dirname(dirname($link));?>" class="carpeta-href">
                                             <div class="panel panel-default carpeta">
                                                 <div class="panel-body text-center">
                                                     <div class="icono-carpeta" style="background: #BFBFBF">
@@ -265,17 +265,17 @@
                         ?>
 
                         <div class="col-md-3 col-xs-6">
-                            <a href="?url=<?= $link ;?>" class="carpeta-href">
+                            <a href="?url=<?php echo $link ;?>" class="carpeta-href">
                                 <div class="panel panel-default carpeta">
                                     <div class="panel-body text-center">
                                         <div class="icono-carpeta">
                                             <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
                                         </div>
-                                        <p><?= $carpeta; ?></p>
+                                        <p><?php echo $carpeta; ?></p>
                                     </div>
                                 </div>
                             </a>
-                            <a href="http://<?= $_SERVER['HTTP_HOST'].$link;?>" target="_blank" class="boton-abrir-externo"><span class="glyphicon glyphicon-share" aria-hidden="true"></span></a>
+                            <a href="http://<?php echo $_SERVER['HTTP_HOST'].$link;?>" target="_blank" class="boton-abrir-externo"><span class="glyphicon glyphicon-share" aria-hidden="true"></span></a>
                         </div>
                     <?php } ?>
                 </div>
@@ -302,11 +302,11 @@
                         ?>
 
                         <div class="col-xs-6 col-sm-4">
-                            <a href="<?= $link;?>" class="carpeta-href">
+                            <a href="<?php echo $link;?>" class="carpeta-href">
                                 <div class="panel panel-default archivo">
                                     <div class="panel-body">
 
-                                        <p><span class="glyphicon glyphicon-file icono-archivo" aria-hidden="true"></span> <?= $archivo; ?></p>
+                                        <p><span class="glyphicon glyphicon-file icono-archivo" aria-hidden="true"></span> <?php echo $archivo; ?></p>
                                     </div>
                                 </div>
                             </a>
@@ -340,7 +340,7 @@
                             $('.search-res').show();
                             $('.search-box').css('margin-bottom','10px');
                             $('.folder-view, .files-view').hide();
-                            $.post('?', {'busqueda':busqueda, 'url':'<?= $url;?>'}, function(data){
+                            $.post('?', {'busqueda':busqueda, 'url':'<?php echo $url;?>'}, function(data){
                                 $('.area-res').html(data);
                             });
                         } else {
