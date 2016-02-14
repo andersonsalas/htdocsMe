@@ -393,7 +393,7 @@
                             <?php
                             foreach ( $langAllow as $key => $_lang ) {
                                 if ( $key != $lang )
-                                    echo '<a href="?url=' . $_GET[ 'url' ] . '&lang=' . $key . '"><img src="' . $_lang . '"/></a>';
+                                    echo '<a href="?url=' . $url . '&lang=' . $key . '"><img src="' . $_lang . '"/></a>';
                                 else
                                     echo '<img class="selected" src="' . $_lang . '"/>';
                              }
