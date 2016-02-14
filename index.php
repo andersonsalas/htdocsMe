@@ -125,6 +125,7 @@
         $url = $i_url = __dir__;
     }
 
+
 ?><!DOCTYPE html>
 <html lang="es">
     <head>
@@ -387,13 +388,14 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="col-xs-6">
-                            <p class="text-muted">htdocsMe! 0.3.1 - Hecho por <a href="http://github.com/andersonsalas">Anderson Salas</a></p>
+                            <p class="text-muted">htdocsMe! 0.3.1 - <a href="https://github.com/andersonsalas/htdocsMe">GitHub</a></p>
                         </div>
                         <div class="col-xs-6 lang-list">
                             <?php
+
                             foreach ( $langAllow as $key => $_lang ) {
                                 if ( $key != $lang )
-                                    echo '<a href="?url=' . $url . '&lang=' . $key . '"><img src="' . $_lang . '"/></a>';
+                                    echo '<a href="?url=' . str_replace(__dir__,'',$url) . '&lang=' . $key . '"><img src="' . $_lang . '"/></a>';
                                 else
                                     echo '<img class="selected" src="' . $_lang . '"/>';
                              }
