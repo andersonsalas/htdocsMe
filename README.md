@@ -29,6 +29,7 @@ Basta copiar o arquivo index.php no diretório raiz do xampp (normalmente htdocs
 ## Traducciones/Translations/Traduções:
 
 Português - por Manuel Santos y Eduardo Kraus
+
 English - By Eduardo Kraus
 
 
